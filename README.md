@@ -21,3 +21,5 @@ Octagonal cells
 ## Visual Generation
 
 Generates an animated GIF to show the step-by-step construction of the maze
+
+![Maze Generation GIF](HexagonalCell.gif)
