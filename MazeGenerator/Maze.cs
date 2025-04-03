@@ -17,16 +17,6 @@ where TMazeCell : class, IMazeCell
             _maze[row, column] = factory.GetInstance(row, column);
     }
 
-    private void SetEndingPoint()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void SetStartingPoint()
-    {
-        
-    }
-
     public int XLenght => _maze.GetLength(0);
     public int YLenght => _maze.GetLength(1);
 
@@ -80,4 +70,8 @@ where TMazeCell : class, IMazeCell
         return _maze[x, y];
     }
 
+    public void SetCell(TMazeCell cell)
+    {
+        _maze[cell.XIndex, cell.YIndex] = cell;
+    }
 }

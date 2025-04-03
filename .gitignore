@@ -1,0 +1,54 @@
+# Geral .NET
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+*.zip
+*.nuget.props
+*.nuget.targets
+*.nuspec
+*.nupkg
+
+# Pacotes NuGet restaurados
+packages/
+*.nupkg
+# Se você usa o PackageReference no csproj, a pasta packages/ não é necessária.
+
+# Arquivos de build/instalação
+.idea
+*.msi
+*.msix
+*.msixupload
+*.appx
+*.appxbundle
+*.appxupload
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+# Rider (JetBrains)
+.idea/
+*.sln.iml
+
+# Resharper (caso use)
+*.DotSettings.user
+_ReSharper.*
+*.DotSettings
+
+# Arquivos temporários de sistema
+[Tt]humbs.db
+*.DS_Store
+*.bak
+
+# Configurações específicas do Windows ou temporárias
+desktop.ini
+*.tmp

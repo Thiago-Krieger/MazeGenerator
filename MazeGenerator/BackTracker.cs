@@ -1,15 +1,20 @@
+#pragma warning disable CA1416
+using System.Drawing;
 
 namespace MazeGenerator;
 
-public class BackTracker<TMazeCell>
+public class BackTracker<TMazeCell> : IMazeGenerator<TMazeCell>
     where TMazeCell : class, IDrawableCell
 {
+    private readonly bool _animate;
     private readonly Random _random;
     private readonly IDictionary<Tuple<int, int>, bool> _exploredRegistry;
     private readonly Maze<TMazeCell> _maze;
+    private readonly List<Image> _frames = new();
 
-    public BackTracker(int rows, int columns)
+    public BackTracker(int rows, int columns, bool animate)
     {
+        _animate = animate;
         _maze = new Maze<TMazeCell>(rows, columns);
         _exploredRegistry = new Dictionary<Tuple<int, int>, bool>();
         for (var row = 0; row < rows; row++)
@@ -19,6 +24,9 @@ public class BackTracker<TMazeCell>
         SetStartingCell();
         SetEndingCell();
         Maze = WriteMaze(0, 0);
+
+        if (animate)
+            MazeDrawer<TMazeCell>.Animate(_frames);
     }
 
     private void SetEndingCell()
@@ -46,14 +54,12 @@ public class BackTracker<TMazeCell>
         var yRand = _random.Next(0, _maze.YLenght - 1);
 
         var startingCell = new[]
-            {
-                _maze.GetCell(0, yRand),
-                _maze.GetCell(_maze.XLenght - 1, yRand),
-                _maze.GetCell(xRand, 0),
-                _maze.GetCell(xRand, _maze.YLenght - 1)
-            }
-            .OrderBy(_ => _random.Next())
-            .FirstOrDefault();
+        {
+            _maze.GetCell(0, yRand),
+            _maze.GetCell(_maze.XLenght - 1, yRand),
+            _maze.GetCell(xRand, 0),
+            _maze.GetCell(xRand, _maze.YLenght - 1)
+        }.MinBy(_ => _random.Next());
 
         if (startingCell is null)
             return;
@@ -87,20 +93,9 @@ public class BackTracker<TMazeCell>
                 continue;
             }
 
-            // MazeDrawer<TMazeCell>.CreateFrame(new DrawParams
-            // {
-            //     Background = Color.Black,
-            //     Path = $"C:\\Users\\ThiagoRobsonKrieger\\RiderProjects\\MazeGenerator\\OcthagonalGiff\\",
-            //     Walls = Color.White,
-            //     CellSize = 60,
-            //     EndingCell = Color.Pink,
-            //     StartingCell = Color.Yellow,
-            //     WallThickness = 3,
-            //     YLenght = _maze.YLenght,
-            //     XLenght = _maze.XLenght,
-            //     Count = count,
-            // }, currentCell);
-            
+            if (_animate)
+                CreateFrame(count, currentCell);
+
             track.Push(nextCell);
             MarkAsExplored(nextCell);
             count++;
@@ -115,6 +110,24 @@ public class BackTracker<TMazeCell>
         return _maze;
     }
 
+    private void CreateFrame(int count, TMazeCell currentCell)
+    {
+        var image = MazeDrawer<TMazeCell>.CreateFrame(new DrawParams
+        {
+            Background = Color.Black,
+            Path = $"C:\\Users\\ThiagoRobsonKrieger\\RiderProjects\\MazeGenerator\\BackTracker\\Frames\\",
+            Walls = Color.White,
+            CellSize = 60,
+            EndingCell = Color.Pink,
+            StartingCell = Color.Yellow,
+            WallThickness = 3,
+            YLenght = _maze.YLenght,
+            XLenght = _maze.XLenght,
+            Count = count,
+        }, currentCell, _frames.LastOrDefault());
+        
+        _frames.Add(image);
+    }
 
     private TMazeCell? GetNextNeighbour(TMazeCell currentCell)
     {

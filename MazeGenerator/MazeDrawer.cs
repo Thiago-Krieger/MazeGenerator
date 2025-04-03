@@ -1,6 +1,7 @@
 #pragma warning disable CA1416
 using System.Drawing;
 using System.Drawing.Imaging;
+using AnimatedGif;
 using Color = System.Drawing.Color;
 
 namespace MazeGenerator;
@@ -14,7 +15,7 @@ public class MazeDrawer<T>
             throw new InvalidOperationException($"The maze is null {drawParams.Maze}");
 
         var width = drawParams.CellSize * drawParams.Maze.XLenght;
-        var height = drawParams.CellSize * drawParams.Maze.YLenght + 60;
+        var height = drawParams.CellSize * drawParams.Maze.YLenght;
 
         using var bitmap = new Bitmap(width, height);
         using var graphics = Graphics.FromImage(bitmap);
@@ -22,7 +23,7 @@ public class MazeDrawer<T>
         graphics.Clear(drawParams.Background);
         DrawCells(graphics, drawParams);
         graphics.DrawImage(bitmap, 0, 0, bitmap.Width, bitmap.Height);
-        bitmap.Save(drawParams.Path, ImageFormat.Bmp);
+        bitmap.Save(drawParams.Path, ImageFormat.Png);
     }
 
     private static void DrawCells(Graphics graphics, DrawParams<T> drawParams)
@@ -39,29 +40,44 @@ public class MazeDrawer<T>
         }
     }
 
-    public static void CreateFrame(DrawParams drawParams, T lastCell)
+    public static Image CreateFrame(DrawParams drawParams, T lastCell, Image? lastFrame)
     {
         var width = drawParams.CellSize * drawParams.XLenght;
         var height = drawParams.CellSize * drawParams.YLenght;
 
-        using var bitmap = (lastCell.XIndex == 0 && lastCell.YIndex == 0)
+        var bitmap = lastCell is { XIndex: 0, YIndex: 0 }
             ? new Bitmap(width, height)
-            : Bitmap.FromFile(drawParams.Path + $"{drawParams.Count - 1}.bmp");
+            : lastFrame is not null 
+                ? new Bitmap(lastFrame) 
+                : new Bitmap(width, height);
 
         using var graphics = Graphics.FromImage(bitmap);
-        if(lastCell.XIndex == 0 && lastCell.YIndex == 0)
+        if(lastCell is { XIndex: 0, YIndex: 0 })
             graphics.Clear(drawParams.Background);
 
         using var pen = new Pen(drawParams.Walls, drawParams.WallThickness);
 
-        var fileName = $"{drawParams.Count}.bmp";
         if (lastCell is IDrawableCell drawableCell)
             drawableCell.Draw(graphics, pen, drawParams);
 
         graphics.DrawImage(bitmap, 0, 0, bitmap.Width, bitmap.Height);
-        bitmap.Save(drawParams.Path + fileName, ImageFormat.Bmp);
-        
-        Thread.Sleep(50);
+
+        return bitmap;
+    }
+
+    public static void Animate(List<Image> frames)
+    {
+        var image = frames.LastOrDefault();
+        image?.Save($@"F:\MazeGenerator\BackTracker\Frames\{typeof(T).Name}.png", ImageFormat.Png);
+
+        using (var gif = new AnimatedGifCreator($@"F:\MazeGenerator\BackTracker\Frames\{typeof(T).Name}.gif", 10))
+        {
+            foreach (var frame in frames)
+            {
+                gif.AddFrame(frame, quality: GifQuality.Bit8);
+                frame.Dispose();
+            }
+        }
     }
 }
 
